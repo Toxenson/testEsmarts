@@ -10,17 +10,11 @@ import UIKit
 
 var perirheral1: CBPeripheral?
 
-protocol BluetoothService: AnyObject {
-    func stopScan()
-    func startScan()
-    func createDevice() -> Device
-}
-
 protocol MainViewControllerDelegate: AnyObject {
-    func didCreatedDevice(dev: [Device])
+    func didCreatedDevice(device: Device)
 }
 
-final class BluetoothServiceImpl: NSObject, BluetoothService, CBCentralManagerDelegate {
+final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate {
     //MARK: - Properties
     private var device: Device?
     private var devicess: [Device] = []
@@ -61,17 +55,11 @@ final class BluetoothServiceImpl: NSObject, BluetoothService, CBCentralManagerDe
     
     func startScan() {
         centralManager.delegate = self
-        mainController = MainViewController()
         centralManager.scanForPeripherals(withServices: nil)
     }
     
     func stopScan() {
         centralManager.stopScan()
-    }
-    
-    func createDevice() -> Device {
-        configureDeviceWith()
-        return device!
     }
     
     func configureDeviceWith() {
@@ -183,7 +171,7 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
         print("отключен \(peripheral.name!)")
         configureDeviceWith()
         devicess.append(device!)
-        mainController?.didCreatedDevice(dev: devicess)
+        mainController?.didCreatedDevice(device: device!)
         startScan()
     }
 }

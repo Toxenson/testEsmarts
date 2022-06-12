@@ -57,14 +57,14 @@ class TableViewCell: UITableViewCell {
     
     private func layoutIt() {
         NSLayoutConstraint.activate([
-            nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -4),
             nameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
             
-            modelLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 1),
-            modelLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
+            modelLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2),
+            modelLabel.leftAnchor.constraint(equalTo: manufactorLabel.rightAnchor, constant: 5),
             
-            manufactorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 1),
-            manufactorLabel.leftAnchor.constraint(equalTo: nameLabel.rightAnchor, constant: 16),
+            manufactorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2),
+            manufactorLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
             
             
             percentLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),

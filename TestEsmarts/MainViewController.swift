@@ -18,20 +18,17 @@ struct Device {
     let battaryLavel: UInt8?
 }
 
-class MainViewController: UIViewController, MainViewControllerDelegate {
-    func didCreatedDevice(dev: [Device]) {
-        devices.append(dev.last!)
-    }
+class MainViewController: UIViewController {
+    
 
     
     //MARK: - Prooerties
     var mainTableView = UITableView()
-    var BTservice: BluetoothService  = BluetoothServiceImpl()
+    var BTservice = BluetoothServiceImpl()
     let button = UIButton()
     private var numOFDevices = 0
-    var devices: [Device] = [] {
+    private var devices: [Device] = [] {
         didSet {
-            print(devices)
             numOFDevices = devices.count
             mainTableView.reloadData()
         }
@@ -45,6 +42,7 @@ class MainViewController: UIViewController, MainViewControllerDelegate {
         initialSetUps()
         setUpTableView()
         registerCells()
+        BTservice.mainController = self
         BTservice.startScan()
     }
 
@@ -65,19 +63,13 @@ class MainViewController: UIViewController, MainViewControllerDelegate {
     private func setUpTableView() {
         mainTableView.delegate = self
         mainTableView.dataSource = self
-        
         mainTableView.showsVerticalScrollIndicator = false
-        
         mainTableView.translatesAutoresizingMaskIntoConstraints = false
         
         mainTableView.sectionHeaderHeight = 70
         mainTableView.sectionHeaderTopPadding = 0
         
         mainTableView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = .red
-        button.addTarget(self, action: #selector(addDevice), for: .touchUpInside)
     }
     
     private func registerCells() {
@@ -100,12 +92,7 @@ class MainViewController: UIViewController, MainViewControllerDelegate {
                 mainTableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
                 mainTableView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.4),
                 mainTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-                mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-                
-                button.topAnchor.constraint(equalTo: mainTableView.bottomAnchor, constant: 20),
-                button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                button.heightAnchor.constraint(equalToConstant: 50),
-                button.widthAnchor.constraint(equalToConstant: 100)
+                mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
             ]
         )
     }
@@ -113,9 +100,6 @@ class MainViewController: UIViewController, MainViewControllerDelegate {
     
     //MARK: - Actions
     
-    @objc func addDevice() {
-        devices.append(Device(name: "sfds", model: "sdfdssds", manfactor: nil, battaryLavel: 3))
-    }
 }
 
 //MARK: - Extensions
@@ -128,10 +112,8 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.cellId, for: indexPath) as? TableViewCell else {
-            print("cell not adding")
             return UITableViewCell()
         }
-        print("cell adding")
         let device = devices[indexPath.row]
         cell.configurateText(device: device)
         return cell
@@ -142,5 +124,11 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
             return header
         }
         return UITableViewHeaderFooterView()
+    }
+}
+
+extension MainViewController: MainViewControllerDelegate {
+    func didCreatedDevice(device: Device) {
+        devices.append(device)
     }
 }
