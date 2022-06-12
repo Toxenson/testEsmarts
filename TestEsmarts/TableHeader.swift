@@ -9,6 +9,7 @@ import UIKit
 
 class TableHeader: UITableViewHeaderFooterView {
     
+    
     static let headerId = String(describing: TableHeader.self)
     private let label = UILabel()
     
@@ -27,11 +28,14 @@ class TableHeader: UITableViewHeaderFooterView {
     }
     
     private func configure() {
+//        contentView.clipsToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Avialable"
         label.textAlignment = .center
         label.font = UIFont.boldSystemFont(ofSize: 16)
         label.textColor = .white
+        contentView.layer.cornerRadius = 16
+        contentView.layer.maskedCorners = [ .layerMinXMinYCorner, .layerMaxXMinYCorner]
         contentView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25)
         contentView.addSubview(label)
     }

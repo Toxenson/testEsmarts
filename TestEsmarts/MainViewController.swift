@@ -29,9 +29,13 @@ class MainViewController: UIViewController {
     let dispatchGroup = DispatchGroup()
     var centralManager: CBCentralManager?
     var devices: [CBPeripheral?] = []
+    var numOFDevices = 0
     var percentsDict: [String:String] = [:] {
         didSet {
+            numOFDevices = percentsDict.count
             mainTableView.reloadData()
+            mainTableView.beginUpdates()
+            mainTableView.endUpdates()
 //            print(percentsDict)
         }
     }
@@ -102,23 +106,19 @@ class MainViewController: UIViewController {
     }
     
     func handleCBDevices() {
-        let t1 = Timer(timeInterval: 300, repeats: true) {
+        let t1 = Timer.scheduledTimer(withTimeInterval: 500, repeats: true) {
             timer in
             print("restarted")
-            self.mainTableView.beginUpdates()
             self.stopScan()
-            self.percentsDict = [:]
-            self.mainTableView.endUpdates()
+            self.numOFDevices = 0
+            self.percentsDict.removeAll()
+            self.mainTableView.reloadData()
             self.startScan()
         }
     }
     
     
     func handleCBDevicesUpdateName() {
-        devices.forEach {
-            device in
-//            device.a
-        }
         mainTableView.reloadData()
     }
     
@@ -142,7 +142,7 @@ class MainViewController: UIViewController {
 extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        percentsDict.keys.count
+        numOFDevices
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

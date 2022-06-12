@@ -55,6 +55,15 @@ class TableViewCell: UITableViewCell {
         
     }
     
+    func makeBorders() {
+        contentView.layer.cornerRadius = 16
+        contentView.layer.maskedCorners = [ .layerMinXMinYCorner, .layerMaxXMinYCorner]
+    }
+    
+    func removeBorders() {
+        contentView.layer.cornerRadius = 0
+    }
+    
     func configuteText(name: String, percent: String) {
 //        print(name)
         nameLabel.text = name

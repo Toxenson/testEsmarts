@@ -33,11 +33,9 @@ extension MainViewController: CBCentralManagerDelegate {
         }
     }
     
-    
-    
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         
-        if peripheral.name == nil {
+        if peripheral.name == nil || devices.contains(peripheral) {
             stopScan()
             startScan()
         } else {
@@ -47,7 +45,7 @@ extension MainViewController: CBCentralManagerDelegate {
             devices.append(perirheral1)
             percentsDict[peripheral.name ?? "Unknown"] = ""
             centralManager?.connect(perirheral1!, options: nil)
-            let timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: {_ in self.centralManager?.cancelPeripheralConnection(peripheral)})
+            let timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: {_ in self.centralManager?.cancelPeripheralConnection(peripheral)})
             print("найдено \(peripheral.name!)")
         }
         
