@@ -15,7 +15,7 @@
 		CEE325D928538FEB00D51F04 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEE325D828538FEB00D51F04 /* Assets.xcassets */; };
 		CEE325DC28538FEB00D51F04 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEE325DA28538FEB00D51F04 /* LaunchScreen.storyboard */; };
 		CEE325E42853909800D51F04 /* TableHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE325E32853909800D51F04 /* TableHeader.swift */; };
-		CEE325E82853938200D51F04 /* BluetoothScaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE325E72853938200D51F04 /* BluetoothScaner.swift */; };
+		CEE325E82853938200D51F04 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE325E72853938200D51F04 /* BluetoothService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +29,7 @@
 		CEE325DB28538FEB00D51F04 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CEE325DD28538FEB00D51F04 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CEE325E32853909800D51F04 /* TableHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableHeader.swift; sourceTree = "<group>"; };
-		CEE325E72853938200D51F04 /* BluetoothScaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothScaner.swift; sourceTree = "<group>"; };
+		CEE325E72853938200D51F04 /* BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +67,7 @@
 				CEE325D328538FE900D51F04 /* MainViewController.swift */,
 				CE753CC52854425200BD26E1 /* TableViewCell.swift */,
 				CEE325E32853909800D51F04 /* TableHeader.swift */,
-				CEE325E72853938200D51F04 /* BluetoothScaner.swift */,
+				CEE325E72853938200D51F04 /* BluetoothService.swift */,
 				CEE325D528538FE900D51F04 /* Main.storyboard */,
 				CEE325D828538FEB00D51F04 /* Assets.xcassets */,
 				CEE325DA28538FEB00D51F04 /* LaunchScreen.storyboard */,
@@ -147,7 +147,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEE325E82853938200D51F04 /* BluetoothScaner.swift in Sources */,
+				CEE325E82853938200D51F04 /* BluetoothService.swift in Sources */,
 				CEE325D428538FE900D51F04 /* MainViewController.swift in Sources */,
 				CEE325E42853909800D51F04 /* TableHeader.swift in Sources */,
 				CE753CC62854425200BD26E1 /* TableViewCell.swift in Sources */,

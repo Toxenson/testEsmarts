@@ -13,10 +13,13 @@ class TableViewCell: UITableViewCell {
     
     let nameLabel = UILabel()
     let percentLabel = UILabel()
+    let manufactorLabel = UILabel()
+    let modelLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configureSubviews()
+        layoutIt()
     }
     
     required init?(coder: NSCoder) {
@@ -25,7 +28,7 @@ class TableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        layoutIt()
+        
     }
     
     private func configureSubviews() {
@@ -34,19 +37,34 @@ class TableViewCell: UITableViewCell {
         nameLabel.textColor = .black
         nameLabel.font = .boldSystemFont(ofSize: 14)
         
+        modelLabel.translatesAutoresizingMaskIntoConstraints = false
+        modelLabel.textColor = .darkGray
+        modelLabel.font = .boldSystemFont(ofSize: 10)
+        
+        manufactorLabel.translatesAutoresizingMaskIntoConstraints = false
+        manufactorLabel.textColor = .darkGray
+        manufactorLabel.font = .boldSystemFont(ofSize: 10)
+        
         percentLabel.translatesAutoresizingMaskIntoConstraints = false
         percentLabel.textColor = .darkGray
         percentLabel.font = .systemFont(ofSize: 12)
         
         contentView.addSubview(nameLabel)
         contentView.addSubview(percentLabel)
-
+        contentView.addSubview(manufactorLabel)
+        contentView.addSubview(modelLabel)
     }
     
     private func layoutIt() {
         NSLayoutConstraint.activate([
             nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             nameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
+            
+            modelLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 1),
+            modelLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
+            
+            manufactorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 1),
+            manufactorLabel.leftAnchor.constraint(equalTo: nameLabel.rightAnchor, constant: 16),
             
             
             percentLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -55,23 +73,15 @@ class TableViewCell: UITableViewCell {
         
     }
     
-    func makeBorders() {
-        contentView.layer.cornerRadius = 16
-        contentView.layer.maskedCorners = [ .layerMinXMinYCorner, .layerMaxXMinYCorner]
-    }
     
-    func removeBorders() {
-        contentView.layer.cornerRadius = 0
-    }
-    
-    func configuteText(name: String, percent: String) {
-//        print(name)
-        nameLabel.text = name
-        if percent == "" {
-            percentLabel.text = "No info"
-        } else  {
-            percentLabel.text = String(percent)
+    func configurateText(device: Device) {
+        nameLabel.text = device.name
+        manufactorLabel.text = device.manfactor
+        modelLabel.text = device.model
+        if let percent = device.battaryLavel {
+            percentLabel.text = String(percent) + " %"
+        } else {
+            percentLabel.text = "No chargeble"
         }
-        
     }
 }

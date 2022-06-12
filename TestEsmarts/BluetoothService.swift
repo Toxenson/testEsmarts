@@ -10,11 +10,38 @@ import UIKit
 
 var perirheral1: CBPeripheral?
 
-extension MainViewController: CBCentralManagerDelegate {
+protocol BluetoothService: AnyObject {
+    func stopScan()
+    func startScan()
+    func createDevice() -> Device
+}
 
+protocol MainViewControllerDelegate: AnyObject {
+    func didCreatedDevice(dev: [Device])
+}
+
+final class BluetoothServiceImpl: NSObject, BluetoothService, CBCentralManagerDelegate {
+    //MARK: - Properties
+    private var device: Device?
+    private var devicess: [Device] = []
+    private var battery: UInt8?
+    private var name: String = ""
+    private var model: String?
+    private var manufactor: String?
+    private let centralManager: CBCentralManager = CBCentralManager()
+    var mainController: MainViewControllerDelegate?
+    
+    
+    
+    //MARK: - Lifecycle
+    
+    override init() {
+        super.init()
+        centralManagerDidUpdateState(centralManager)
+    }
+    
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         processBLEState(central.state)
-        debugPrint(central.state)
     }
     
     private func processBLEState(_ managerState: CBManagerState) {
@@ -24,7 +51,6 @@ extension MainViewController: CBCentralManagerDelegate {
              .unsupported,
              .unauthorized,
              .poweredOff:
-            stopScan()
             break
         case .poweredOn:
             startScan()
@@ -33,33 +59,51 @@ extension MainViewController: CBCentralManagerDelegate {
         }
     }
     
+    func startScan() {
+        centralManager.delegate = self
+        mainController = MainViewController()
+        centralManager.scanForPeripherals(withServices: nil)
+    }
+    
+    func stopScan() {
+        centralManager.stopScan()
+    }
+    
+    func createDevice() -> Device {
+        configureDeviceWith()
+        return device!
+    }
+    
+    func configureDeviceWith() {
+        device = Device(name: name, model: model, manfactor: manufactor, battaryLavel: battery)
+    }
+    
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        
-        if peripheral.name == nil || devices.contains(peripheral) {
-            stopScan()
-            startScan()
-        } else {
+//        print(peripheral)
+        battery = nil
+        name = ""
+        model = nil
+        manufactor = nil
+        if peripheral.name != nil && !devicess.contains(where: {device in device.name == peripheral.name}) {
             perirheral1 = peripheral
-            centralManager?.stopScan()
+            stopScan()
+            self.name = peripheral.name!
             perirheral1!.delegate = self
-            devices.append(perirheral1)
-            percentsDict[peripheral.name ?? "Unknown"] = ""
-            centralManager?.connect(perirheral1!, options: nil)
-            let timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: {_ in self.centralManager?.cancelPeripheralConnection(peripheral)})
+            centralManager.connect(perirheral1!)
+            _ = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: {_ in self.centralManager.cancelPeripheralConnection(peripheral)})
             print("найдено \(peripheral.name!)")
         }
         
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-//        print("connected to \(peripheral.name)")
             peripheral.discoverServices(nil)
         print("присоеденено \(peripheral.name!)")
         
     }
 }
 
-extension MainViewController: CBPeripheralDelegate {
+extension BluetoothServiceImpl: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         
@@ -69,14 +113,14 @@ extension MainViewController: CBPeripheralDelegate {
             print(service)
         }
         guard let services = peripheral.services else {
-            centralManager?.cancelPeripheralConnection(peripheral)
+            centralManager.cancelPeripheralConnection(peripheral)
             return
         }
         let batteryUUID = CBUUID(string: "180F")
         let deviceUUID = CBUUID(string: "180A")
         if !services.contains(where: {services in
             return services.uuid == batteryUUID || services.uuid == deviceUUID}) {
-            centralManager?.cancelPeripheralConnection(peripheral)
+            centralManager.cancelPeripheralConnection(peripheral)
         }
 
         for service in services {
@@ -93,7 +137,6 @@ extension MainViewController: CBPeripheralDelegate {
         
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        print(service.characteristics)
         
         if let manufactorCharacteristic = service.characteristics?.first(where: {$0.uuid == CBUUID(string: "2A29")}) {
             peripheral.readValue(for: manufactorCharacteristic)
@@ -106,8 +149,6 @@ extension MainViewController: CBPeripheralDelegate {
         }
         
     }
-
-    
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
@@ -120,19 +161,17 @@ extension MainViewController: CBPeripheralDelegate {
                 return
             }
             let batteryLevel = firstByte
-            percentsDict[peripheral.name!] = String(batteryLevel) + " %" + " " + (percentsDict[peripheral.name!] ?? "")
-            print("battery level:", batteryLevel)
+            self.battery = batteryLevel
             }
         if characteristic.uuid == CBUUID(string: "2A29") {
             let manufactor = String(decoding: data, as: UTF8.self)
-            print(manufactor)
-            percentsDict[peripheral.name!] = manufactor + " " + (percentsDict[peripheral.name!] ?? "")
+            self.manufactor = manufactor
         }
         if characteristic.uuid == CBUUID(string: "2A24") {
             let model = String(decoding: data, as: UTF8.self)
-            print(model)
-            percentsDict[peripheral.name!] = model + " " + (percentsDict[peripheral.name!] ?? "")
+            self.model = model
         }
+        
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -142,6 +181,9 @@ extension MainViewController: CBPeripheralDelegate {
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("отключен \(peripheral.name!)")
+        configureDeviceWith()
+        devicess.append(device!)
+        mainController?.didCreatedDevice(dev: devicess)
         startScan()
     }
 }

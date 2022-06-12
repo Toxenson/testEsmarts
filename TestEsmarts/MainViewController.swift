@@ -9,55 +9,43 @@ import UIKit
 import CoreBluetooth
 
 // TODO: скруглить ячейку снизу
+
+
 struct Device {
-    let icon: UIImage
     let name: String
-    let signal: Signal
-    
-    
-    enum Signal {
-        case none
-        case small
-        case middle
-        case strong
-    }
+    let model: String?
+    let manfactor: String?
+    let battaryLavel: UInt8?
 }
 
-class MainViewController: UIViewController {
+class MainViewController: UIViewController, MainViewControllerDelegate {
+    func didCreatedDevice(dev: [Device]) {
+        devices.append(dev.last!)
+    }
 
-    let mainTableView = UITableView()
-    let dispatchGroup = DispatchGroup()
-    var centralManager: CBCentralManager?
-    var devices: [CBPeripheral?] = []
-    var numOFDevices = 0
-    var percentsDict: [String:String] = [:] {
+    
+    //MARK: - Prooerties
+    var mainTableView = UITableView()
+    var BTservice: BluetoothService  = BluetoothServiceImpl()
+    let button = UIButton()
+    private var numOFDevices = 0
+    var devices: [Device] = [] {
         didSet {
-            numOFDevices = percentsDict.count
+            print(devices)
+            numOFDevices = devices.count
             mainTableView.reloadData()
-            mainTableView.beginUpdates()
-            mainTableView.endUpdates()
-//            print(percentsDict)
         }
     }
-    private var service: CBService?
-    let uuids: [CBUUID] = [
-        CBUUID(string: "0x180F"),
-    ]
     
-//    var devices = [CBPeripheral]() { // [UUID: Device] for unique devices
-//        didSet {
-//            mainTableView.reloadData()
-//        }
-//    }
     
+    //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initialSetUps()
         setUpTableView()
         registerCells()
-        setUpCentralManager()
-        handleCBDevices()
+        BTservice.startScan()
     }
 
     override func viewWillLayoutSubviews() {
@@ -66,9 +54,12 @@ class MainViewController: UIViewController {
         setUpConstrains()
     }
     
+    //MARK: - Setups
+    
     private func initialSetUps() {
         view.backgroundColor = .white
         view.addSubview(mainTableView)
+        view.addSubview(button)
     }
 
     private func setUpTableView() {
@@ -83,44 +74,20 @@ class MainViewController: UIViewController {
         mainTableView.sectionHeaderTopPadding = 0
         
         mainTableView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = .red
+        button.addTarget(self, action: #selector(addDevice), for: .touchUpInside)
     }
     
     private func registerCells() {
         mainTableView.register(TableHeader.self, forHeaderFooterViewReuseIdentifier: TableHeader.headerId)
         mainTableView.register(TableViewCell.self, forCellReuseIdentifier: TableViewCell.cellId)
     }
-    
-    private func setUpCentralManager() {
-        centralManager = CBCentralManager(delegate: self, queue: nil)
-        
-        centralManager?.delegate = self
-    }
-    
-    func startScan() {
-        let batteruID = CBUUID(string: "180F")
-        centralManager?.scanForPeripherals(withServices: nil, options: nil)
-    }
-    
-    func stopScan() {
-        centralManager?.stopScan()
-    }
-    
-    func handleCBDevices() {
-        let t1 = Timer.scheduledTimer(withTimeInterval: 500, repeats: true) {
-            timer in
-            print("restarted")
-            self.stopScan()
-            self.numOFDevices = 0
-            self.percentsDict.removeAll()
-            self.mainTableView.reloadData()
-            self.startScan()
-        }
-    }
+
     
     
-    func handleCBDevicesUpdateName() {
-        mainTableView.reloadData()
-    }
+    //MARK: - Layout
     
     private func setUpTableViewLayout() {
         mainTableView.layer.cornerRadius = 16
@@ -133,22 +100,40 @@ class MainViewController: UIViewController {
                 mainTableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
                 mainTableView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.4),
                 mainTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-                mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+                mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+                
+                button.topAnchor.constraint(equalTo: mainTableView.bottomAnchor, constant: 20),
+                button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                button.heightAnchor.constraint(equalToConstant: 50),
+                button.widthAnchor.constraint(equalToConstant: 100)
             ]
         )
     }
+    
+    
+    //MARK: - Actions
+    
+    @objc func addDevice() {
+        devices.append(Device(name: "sfds", model: "sdfdssds", manfactor: nil, battaryLavel: 3))
+    }
 }
+
+//MARK: - Extensions
 
 extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        numOFDevices
+        return devices.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.cellId, for: indexPath) as? TableViewCell else {return UITableViewCell()}
-        let key = Array(percentsDict.keys)[indexPath.row]
-        cell.configuteText(name: key, percent: percentsDict[key]!)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.cellId, for: indexPath) as? TableViewCell else {
+            print("cell not adding")
+            return UITableViewCell()
+        }
+        print("cell adding")
+        let device = devices[indexPath.row]
+        cell.configurateText(device: device)
         return cell
     }
     
@@ -159,4 +144,3 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
         return UITableViewHeaderFooterView()
     }
 }
-
