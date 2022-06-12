@@ -28,22 +28,23 @@ class MainViewController: UIViewController {
     let mainTableView = UITableView()
     let dispatchGroup = DispatchGroup()
     var centralManager: CBCentralManager?
-    var devices: [CBPeripheral] = []
-    var peripheral: CBPeripheral?
-    var percentsDict: [String:Int32] = [:] {
+    var devices: [CBPeripheral?] = []
+    var percentsDict: [String:String] = [:] {
         didSet {
             mainTableView.reloadData()
 //            print(percentsDict)
         }
     }
     private var service: CBService?
+    let uuids: [CBUUID] = [
+        CBUUID(string: "0x180F"),
+    ]
     
 //    var devices = [CBPeripheral]() { // [UUID: Device] for unique devices
 //        didSet {
 //            mainTableView.reloadData()
 //        }
 //    }
-    var cbperipheral: CBPeripheral?
     
     
     override func viewDidLoad() {
@@ -77,7 +78,7 @@ class MainViewController: UIViewController {
         mainTableView.sectionHeaderHeight = 70
         mainTableView.sectionHeaderTopPadding = 0
         
-        mainTableView.backgroundColor = .clear
+        mainTableView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
     }
     
     private func registerCells() {
@@ -113,7 +114,11 @@ class MainViewController: UIViewController {
     }
     
     
-    func handleCBDevicesUpdateName(_ device: CBPeripheral) {
+    func handleCBDevicesUpdateName() {
+        devices.forEach {
+            device in
+//            device.a
+        }
         mainTableView.reloadData()
     }
     
@@ -143,7 +148,7 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.cellId, for: indexPath) as? TableViewCell else {return UITableViewCell()}
         let key = Array(percentsDict.keys)[indexPath.row]
-        cell.configuteText(name: key, percent: percentsDict[key] ?? 0)
+        cell.configuteText(name: key, percent: percentsDict[key]!)
         return cell
     }
     

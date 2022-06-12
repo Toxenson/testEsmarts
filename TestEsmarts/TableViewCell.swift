@@ -55,13 +55,13 @@ class TableViewCell: UITableViewCell {
         
     }
     
-    func configuteText(name: String, percent: Int32) {
+    func configuteText(name: String, percent: String) {
 //        print(name)
         nameLabel.text = name
-        if percent == 0 {
-            percentLabel.text = "No charge"
+        if percent == "" {
+            percentLabel.text = "No info"
         } else  {
-            percentLabel.text = String(percent) + " %"
+            percentLabel.text = String(percent)
         }
         
     }
