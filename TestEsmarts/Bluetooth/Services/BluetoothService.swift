@@ -8,35 +8,21 @@
 import CoreBluetooth
 import UIKit
 
-var perirheral1: CBPeripheral?
-
-protocol MainViewControllerDelegate: AnyObject {
-    func didCreatedDevice(device: Device)
-}
-
 protocol BluetoothService {
-    var delegate: MainViewControllerDelegate? { get set }
+    var onDeviceGet: ((Device) -> ())? { get set }
     func startScan()
     func stopScan()
     func restartAll()
 }
 
 final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate, BluetoothService {
-    
     //MARK: - Properties
-    private var device: Device?
-    private var devices: [Device] = []
-    private var battery: UInt8?
-    private var name: String = ""
-    private var model: String?
-    private var manufactor: String?
+    private var currentDevice: Device?
+    private var devices: [CBPeripheral] = []
     private let centralManager: CBCentralManager = CBCentralManager()
-    var delegate: MainViewControllerDelegate?
-    
-    
+    var onDeviceGet: ((Device) -> ())?
     
     //MARK: - Lifecycle
-    
     override init() {
         super.init()
         centralManagerDidUpdateState(centralManager)
@@ -72,41 +58,26 @@ final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate, BluetoothS
     
     func restartAll() {
         stopScan()
-        device = nil
+        currentDevice = nil
         devices = []
-        battery = nil
-        name = ""
-        model = nil
-        manufactor = nil
         startScan()
     }
     
-    func configureDeviceWith() {
-        device = Device(name: name, model: model, manfactor: manufactor, battaryLavel: battery)
-    }
-    
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-//        print(peripheral)
-        battery = nil
-        name = ""
-        model = nil
-        manufactor = nil
-        if peripheral.name != nil && !devices.contains(where: {device in device.name == peripheral.name}) {
-            perirheral1 = peripheral
+        if peripheral.name != nil && !devices.contains(where: {$0 == peripheral}) {
+            currentDevice = Device(name: peripheral.name)
+            devices.append(peripheral)
             stopScan()
-            self.name = peripheral.name!
-            perirheral1!.delegate = self
-            centralManager.connect(perirheral1!)
+            peripheral.delegate = self
+            centralManager.connect(peripheral)
             _ = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: {_ in self.centralManager.cancelPeripheralConnection(peripheral)})
             print("найдено \(peripheral.name!)")
         }
-        
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
             peripheral.discoverServices(nil)
         print("присоеденено \(peripheral.name!)")
-        
     }
 }
 
@@ -142,7 +113,6 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
         }
     }
         
-    
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         
         if let manufactorCharacteristic = service.characteristics?.first(where: {$0.uuid == CBUUID(string: "2A29")}) {
@@ -154,7 +124,6 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
         if let batteryLevelCharacteristic = service.characteristics?.first(where: {$0.uuid == CBUUID(string: "2A19")}) {
             peripheral.readValue(for: batteryLevelCharacteristic)
         }
-        
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -168,17 +137,16 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
                 return
             }
             let batteryLevel = firstByte
-            self.battery = batteryLevel
+            self.currentDevice?.battaryLavel = batteryLevel
             }
         if characteristic.uuid == CBUUID(string: "2A29") {
             let manufactor = String(decoding: data, as: UTF8.self)
-            self.manufactor = manufactor
+            self.currentDevice?.manfactor = manufactor
         }
         if characteristic.uuid == CBUUID(string: "2A24") {
             let model = String(decoding: data, as: UTF8.self)
-            self.model = model
+            self.currentDevice?.model = model
         }
-        
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -187,10 +155,12 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        guard let device = currentDevice else {
+            return
+        }
         print("отключен \(peripheral.name!)")
-        configureDeviceWith()
-        devices.append(device!)
-        delegate?.didCreatedDevice(device: device!)
+        onDeviceGet?(device)
+        currentDevice = nil
         startScan()
     }
 }

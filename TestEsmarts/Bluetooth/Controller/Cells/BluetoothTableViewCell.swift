@@ -7,9 +7,9 @@
 
 import UIKit
 
-class TableViewCell: UITableViewCell {
+final class BluetoothTableViewCell: UITableViewCell {
     
-    static let cellId = String(describing: TableViewCell.self)
+    static let cellId = String(describing: BluetoothTableViewCell.self)
     
     let separator1 = UIView()
     let separator2 = UIView()

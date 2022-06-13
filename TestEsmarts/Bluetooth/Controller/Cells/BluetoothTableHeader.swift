@@ -7,10 +7,9 @@
 
 import UIKit
 
-class TableHeader: UITableViewHeaderFooterView {
+final class BluetoothTableHeader: UITableViewHeaderFooterView {
     
-    
-    static let headerId = String(describing: TableHeader.self)
+    static let headerId = String(describing: BluetoothTableHeader.self)
     private let label = UILabel()
     
     override init(reuseIdentifier: String?) {
