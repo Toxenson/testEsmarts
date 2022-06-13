@@ -24,12 +24,9 @@ class MainViewController: UIViewController {
     
     //MARK: - Prooerties
     var mainTableView = UITableView()
-    var BTservice = BluetoothServiceImpl()
-    let button = UIButton()
-    private var numOFDevices = 0
+    var BTservice: BluetoothService = BluetoothServiceImpl()
     private var devices: [Device] = [] {
         didSet {
-            numOFDevices = devices.count
             mainTableView.reloadData()
         }
     }
@@ -42,8 +39,9 @@ class MainViewController: UIViewController {
         initialSetUps()
         setUpTableView()
         registerCells()
-        BTservice.mainController = self
+        BTservice.delegate = self
         BTservice.startScan()
+        startingTimer()
     }
 
     override func viewWillLayoutSubviews() {
@@ -55,9 +53,8 @@ class MainViewController: UIViewController {
     //MARK: - Setups
     
     private func initialSetUps() {
-        view.backgroundColor = .white
+        view.backgroundColor = .clear
         view.addSubview(mainTableView)
-        view.addSubview(button)
     }
 
     private func setUpTableView() {
@@ -69,7 +66,8 @@ class MainViewController: UIViewController {
         mainTableView.sectionHeaderHeight = 70
         mainTableView.sectionHeaderTopPadding = 0
         
-        mainTableView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
+        mainTableView.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0.3)
+        mainTableView.rowHeight = 50
     }
     
     private func registerCells() {
@@ -90,7 +88,7 @@ class MainViewController: UIViewController {
             [
                 mainTableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 mainTableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-                mainTableView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.4),
+                mainTableView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.8),
                 mainTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
                 mainTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
             ]
@@ -99,7 +97,16 @@ class MainViewController: UIViewController {
     
     
     //MARK: - Actions
+    private func startingTimer() {
+        let _ = Timer.scheduledTimer(withTimeInterval: 300, repeats: true, block: { _ in self.restartAll() })
+    }
     
+    private func restartAll() {
+        print("restarting")
+        BTservice.restartAll()
+        devices = []
+        print("restarted")
+    }
 }
 
 //MARK: - Extensions
@@ -113,6 +120,11 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.cellId, for: indexPath) as? TableViewCell else {
             return UITableViewCell()
+        }
+        if indexPath.row == devices.count-1 {
+            cell.makeCorners()
+        } else {
+            cell.disableCorners()
         }
         let device = devices[indexPath.row]
         cell.configurateText(device: device)

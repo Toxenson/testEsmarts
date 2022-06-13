@@ -40,6 +40,7 @@ class TableHeader: UITableViewHeaderFooterView {
         contentView.addSubview(label)
     }
     
+    
     private func layout() {
         NSLayoutConstraint.activate([
 //

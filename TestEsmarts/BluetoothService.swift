@@ -14,16 +14,24 @@ protocol MainViewControllerDelegate: AnyObject {
     func didCreatedDevice(device: Device)
 }
 
-final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate {
+protocol BluetoothService {
+    var delegate: MainViewControllerDelegate? { get set }
+    func startScan()
+    func stopScan()
+    func restartAll()
+}
+
+final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate, BluetoothService {
+    
     //MARK: - Properties
     private var device: Device?
-    private var devicess: [Device] = []
+    private var devices: [Device] = []
     private var battery: UInt8?
     private var name: String = ""
     private var model: String?
     private var manufactor: String?
     private let centralManager: CBCentralManager = CBCentralManager()
-    var mainController: MainViewControllerDelegate?
+    var delegate: MainViewControllerDelegate?
     
     
     
@@ -62,6 +70,17 @@ final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate {
         centralManager.stopScan()
     }
     
+    func restartAll() {
+        stopScan()
+        device = nil
+        devices = []
+        battery = nil
+        name = ""
+        model = nil
+        manufactor = nil
+        startScan()
+    }
+    
     func configureDeviceWith() {
         device = Device(name: name, model: model, manfactor: manufactor, battaryLavel: battery)
     }
@@ -72,13 +91,13 @@ final class BluetoothServiceImpl: NSObject, CBCentralManagerDelegate {
         name = ""
         model = nil
         manufactor = nil
-        if peripheral.name != nil && !devicess.contains(where: {device in device.name == peripheral.name}) {
+        if peripheral.name != nil && !devices.contains(where: {device in device.name == peripheral.name}) {
             perirheral1 = peripheral
             stopScan()
             self.name = peripheral.name!
             perirheral1!.delegate = self
             centralManager.connect(perirheral1!)
-            _ = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: {_ in self.centralManager.cancelPeripheralConnection(peripheral)})
+            _ = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: {_ in self.centralManager.cancelPeripheralConnection(peripheral)})
             print("найдено \(peripheral.name!)")
         }
         
@@ -170,8 +189,8 @@ extension BluetoothServiceImpl: CBPeripheralDelegate {
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("отключен \(peripheral.name!)")
         configureDeviceWith()
-        devicess.append(device!)
-        mainController?.didCreatedDevice(device: device!)
+        devices.append(device!)
+        delegate?.didCreatedDevice(device: device!)
         startScan()
     }
 }
